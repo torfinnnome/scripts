@@ -55,11 +55,11 @@ def process_fastas(sequences, args):
                 os.makedirs(args.outvardir, exist_ok=True)
 
             # Process the variation files
-            var = read_variation(in_var)
-            write_variation(out_var, var)
+            vars = read_variation(in_var)
+            write_variation(out_var, vars)
 
             # Output fasta files
-            process_fasta(in_fasta, out_fasta, var)
+            process_fasta(in_fasta, out_fasta, vars)
 
         except:
             print("Error processing fasta id", seq)
@@ -68,23 +68,26 @@ def process_fastas(sequences, args):
 
 def read_variation(in_var):
     """Read the input variation file"""
-    var = {}
+    vars = []
     try:
         with open(in_var) as f:
-                variation = f.readline().strip()
-        var['aa_in'] = variation[0]
-        var['aa_out'] = variation[-1]
-        var['aa_position'] = int(variation[1:-1])
+            for line in f:
+                variation = line.strip()
+                aa_in = variation[0]
+                aa_out = variation[-1]
+                aa_position = int(variation[1:-1])
+                vars.append({'aa_in': aa_in, 'aa_out': aa_out, 'aa_position': aa_position})
     except:
         print("Error reading input variation file")
         sys.exit(1)
-    return(var)
+    return(vars)
 
 
-def write_variation(out_var, var):
+def write_variation(out_var, vars):
     """Write the flipped variation file"""
     try:
         with open(out_var, 'w') as f:
+            for var in vars:
                 output_string = var['aa_out'] + str(var['aa_position']) + var['aa_in']
                 print(output_string, file=f)
     except:
@@ -93,25 +96,26 @@ def write_variation(out_var, var):
     return()
 
 
-def process_fasta(in_fasta, out_fasta, var):
+def process_fasta(in_fasta, out_fasta, vars):
     """Read fasta file, and replace amino acid"""
     try:
-        with open(in_fasta, "rU") as f:
+        with open(in_fasta, "r") as f:
             for record_in in SeqIO.parse(f, "fasta"):
                 record_out = record_in
 
-                aa_position = int(var['aa_position']) - 1
-                aa_current = record_in.seq[aa_position]
+                for var in vars:
+                    aa_in = var['aa_in']
+                    aa_out = var['aa_out']
+                    aa_position = int(var['aa_position']) - 1
+                    aa_current = record_in.seq[aa_position]
 
-                if aa_current == var['aa_in']:
-                    record_out.seq = replace_string_pos(record_in.seq, aa_position, var['aa_out'])
-                    SeqIO.write(record_out, out_fasta, "fasta")
-                else:
-                    print("Error: Amino acid mismatch detected: ", record_in.id)
-                    sys.exit()
-
+                    if aa_current == var['aa_in']:
+                        record_out.seq = replace_string_pos(record_in.seq, aa_position, var['aa_out'])
+                    else:
+                        print("Warning: Amino acid mismatch detected, skipping:", record_in.id, aa_in + str(aa_position+1) + aa_out)
+        SeqIO.write(record_out, out_fasta, "fasta")
     except:
-        print("Error occurd in process_fasta.")
+        print("Error occured in process_fasta.")
         sys.exit(1)
 
 

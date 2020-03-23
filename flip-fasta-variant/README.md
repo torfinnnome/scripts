@@ -2,6 +2,10 @@
 
 Reads a variant file with three values: Original amino acid, the position, and the replacement amino acid. It then reads a fasta file, replaces the amino acid, and outputs a new variant file.
 
+# Needed
+
+Python3 and Biopython.
+
 # Example
 
 ## Input
