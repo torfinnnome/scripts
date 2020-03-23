@@ -7,10 +7,6 @@ Reads a variant file with three values: Original amino acid, the position, and t
 ## Input
 
 ```
-$ python flip-fasta-variant.py --seqs test/proteins.txt --vardir test --fastadir test --outvardir testout --outfastadir testout
-```
-
-```
 test/proteins.txt:
 protein1
 ```
@@ -23,6 +19,13 @@ XXXXYXXXX
 test/protein1.var:
 Y5X
 ```
+
+## Execute script
+
+```
+$ python flip-fasta-variant.py --seqs test/proteins.txt --vardir test --fastadir test --outvardir testout --outfastadir testout
+```
+
 
 ## Output
 
